@@ -1,0 +1,72 @@
+#!/bin/bash
+
+if [ "${USER}" = "root" ]; then
+	echo "Warning: running as root. Must be run as user. Abort." >&2
+	exit 1
+fi
+
+MYAPPNAME="$( basename "$0" )"
+
+ATCGROUP='anontracon'
+PIDDIR="/var/run/anontracon"
+PIDFILE="${PIDDIR}/atc_client.${USER}.pid"
+ATC_CLIENT_SCRIPT='/usr/share/anontracon/anontracon_client.py'
+if [ ! -d "$PIDDIR" ]; then
+	echo "ERROR: ATC run directory not found." >&2
+	exit 1
+fi
+
+
+add_pid_file() {
+	local tmpPID=$1
+	echo "$tmpPID" | sed 's/[^0-9]*//g' >"$PIDFILE"
+	if [[ ! "$( ls -g "$PIDFILE" | \
+		awk '{print $3}' )" == "$ATCGROUP" ]]; then
+		chown ${USER}:$ATCGROUP "$PIDFILE"
+	fi
+	if ! ls -l "$PIDFILE" | grep '^.rw.r-----' >/dev/null ; then
+		chmod 640 "$PIDFILE"
+	fi
+
+}
+
+
+check_pid_file() {
+	if ! touch "$PIDFILE" ; then
+		echo "ERROR: Unable to create PID file." >&2
+		exit 1
+	elif [ ! -f "$PIDFILE" ]; then
+		echo "ERROR: PID file exists but is not normal file." >&2
+		exit 1
+	fi
+	local tmpPID=""
+	if [ -f "$PIDFILE" ]; then
+		tmpPID="$( cat "$PIDFILE" )"
+		if printf "$tmpPID" | tr '\n' ' ' | \
+			grep '[^0-9]' >/dev/null; then
+			echo "ERROR: non-standard characters in PID file. Program may have been tampered with." >&2
+			exit 1
+		elif [ ! -z "$tmpPID" ] && [ -e /proc/$tmpPID ] && \
+			cat /proc/${tmpPID}/cmdline | tr '\0' '\n' | \
+			grep "$ATC_CLIENT_SCRIPT" >/dev/null ; then
+			echo "ERROR: programming already running with PID $tmpPID . Stop or kill existing PID and try again." >&2
+			exit 1
+		else
+			add_pid_file ""
+		fi	
+	fi
+}
+
+
+### do NOT daemonize!!!
+### check the pid file
+### other than that, "/etc/xdg/autostart/" will run it in background on its own
+
+check_pid_file
+
+set -m
+python "$ATC_CLIENT_SCRIPT" &
+PID=$!
+add_pid_file $PID
+fg %%
+exit $?

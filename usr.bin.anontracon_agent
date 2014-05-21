@@ -1,0 +1,82 @@
+#!/bin/bash
+
+LOG='/tmp/atc_agent.start.debug'
+
+if [ ! $USER = 'root' ]; then
+	echo "Must be root." >>$LOG
+	exit 1
+fi
+
+
+atc_agent='/usr/share/anontracon/anontracon_agent.py'
+atc_rundir='/var/run/anontracon'
+#atc_agent_lockfile="${atc_agent_rundir}/atc_agent/atc_agent.lock"
+atc_agent_group='anontracon'
+
+count=0
+while ! service tor status >/dev/null; do
+	sleep 1
+	count=$(( $count + 1 ))
+	if [ $count -gt 10 ]; then
+		echo "TOR not running. Abort." >>$LOG
+		exit 1
+	fi
+done
+
+if [ ! -d "$atc_agent_rundir" ]; then
+	if ! mkdir -p "$atc_rundir"; then
+		echo "Cannot make $atc_rundir" >>$LOG
+		exit 1
+	fi
+fi
+
+if ! chown ${USER}:${atc_agent_group} "$atc_rundir" ; then
+	echo "cannot chown $atc_rundir" >>$LOG
+	exit 1
+fi
+if ! chmod 770 "$atc_rundir" ; then
+	echo "Cannot chmod $atc_rundir" >>$LOG
+	exit 1
+fi
+
+#if [ ! -d "$( dirname "$atc_agent_lockfile")" ]; then
+#	if ! mkdir -p "$atc_agent_lockfile" ; then
+#		echo "cannot mkdir $atc_agent_lockfile" >>$LOG
+#	fi
+#fi
+
+newpids=""
+if [ -e "${atc_agent}" ]; then
+	exec python "${atc_agent}" 2>/tmp/atc_failage.txt
+	#pid=$!
+	#for i in {1..5}; do
+	#	if [ -f "$atc_agent_lockfile" ]; then
+	#		gotpids="$( cat "$atc_agent_lockfile" | \
+	#		grep -o '[0-9]\{1,\}' )"
+	#		for i in $gotpids ; do
+	#		  if [ -e /proc/$i ] && \
+	#		    ps -p $i -o '%a' | \
+	#		    grep "python $atc_agent" >/dev/null; then
+	#			newpids+="$i "
+	#		   pidnums="$( echo "$newpids" | wc -w )"
+	#		   if [ $pidnums -eq 1 ]; then
+	#			break
+	#		   fi
+	#		  fi
+	#		done
+	#	fi
+	#done
+	#if [ $pidnums -eq 1 ]; then
+	#	foundpid=$( ps -p $newpid -o "%a" | \
+	#		grep -c "^python $atc_agent_lockfile" )
+	#	exit 0
+	#elif [ $pidnums -eq 0 ]; then
+	#	echo "Failed to start." >&2
+	#	exit 1
+	#else echo "Starting error. PID failure." >&2
+	#	exit 1
+	#fi
+else
+	echo "main file not found for atc_agent. Abort." >&2
+	exit 1
+fi

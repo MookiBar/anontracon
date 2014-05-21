@@ -1,0 +1,100 @@
+--- ATC FAQ ---
+
+Q: How do I contact someone about my ATC problems?
+
+A: To Be Determined (or talk to me in person)
+
+Q: Why is TOR so slow?
+
+A: Between the network latency and the choke points that occur at some nodes, TOR will always be much, much slower than a normal connection. This is an unavoidable side-effect of having a connection travel across multiple proxies. For more information, another question explains this further: "What is the "alleged max bandwidth" associated with a node?".
+
+Q: My status says "Unavailable (disconnected)". What does this mean?
+
+A: It means ATC can't find the TOR service running on your computer (or the TOR socket). This probably also means that either you haven't started TOR (hint: try a full restart), or you have a bad installation of ATC or TOR (hint: consult your nearest nerd or myself).
+
+Q: I cannot connect to anything through TOR and my status says "Running (disconnected)". What does this mean?
+
+A: It usually means that the TOR service is running on your machine but your connection is being interrupted by any number of things: ISP blocking TOR, firewall blocking TOR or even just an unplugged ethernet cable.
+
+Q: I cannot connect to anything through TOR and my status says "Running (disconnected)". Why does it still say I have "exit nodes available"?
+
+A: The logical process behind the TOR service hangs on to the circuits it has recently created until their intended lifespan runs out or they fail a certain number of times. If your connection problems persist, the "available" nodes will eventually disappear.
+
+Q: I lost my internet connection but ATC says I'm still connected. Is this normal?
+
+A: When TOR is not building or shutting down circuits or sending out web traffic or anything else that it does on a schedule, it waits. It won't know what's failing if all it's doing is waiting. Give it a few minutes and it will start failing all over the place (and with ATC telling you so).
+
+Q: I clicked through "Use New Exit Node..." but the country / flag did not change. Why?
+
+A: This settings tells TOR to use a new exit for the next data stream. If you are not sending or receiving any new data, this will not change. Try opening a new window or new tab in your TOR-enabled browser. If the flag still doesn't change, you may consider this a bug.
+
+Q: The country / flag changes rapidly when I browse to a new site. What might cause this?
+
+A: This is based on how TOR takes a stream (of TCP data) and sends it out from one of its available circuits. 
+  Each website might retrieve data from additional websites (think of all the pictures, ads, etc.). Each of those additional websites will be an additional TCP stream. Each TCP stream might go out a different TOR circuit. Each circuit might be a different exit. 
+  So, a little bit of this behavior is to be expected. If it flickers between a couple countries / flags only a couple of times after browsing to a website, do not worry.
+
+Q: I made a setting to confine or block nodes or countries, but the setting did not seem to have any effect. Why?
+
+A: First of all, there is a warning that explains this. When you make certain changes to TOR's settings and those settings are too restrictive for TOR to function properly, it will eventually revert to default settings to fix its broken state. There are some exceptions to this behavior, of course...
+
+Q: I am trying to use a bridge that I think is working or that I have used before. Now I do not have any connectivity across TOR. What is happening?
+
+A: Bridges are very ephemeral. They come and go quite sporadically and can be made unavailable for a host of other reasons. If you only set a small number of bridges and they are unavailable for any amount of time, you will not have any TOR connectivity. The TOR service will not try to work around this, so you must either find new bridges or disable them.
+
+Q: I see entries about Obfs-Proxy but no way to enable Obfs-Proxy. What gives?
+
+A: TBD
+
+Q: What is the "alleged max bandwidth" associated with a node? What is "circuit max"? How are they different?
+
+A: As a "rule of thumb" for guessing your current bandwidth capacity in TOR, find the lowest possible number and then guess something even lower than that. 
+ Most nodes in TOR give a best guess of what their total bandwidth is. The "alleged max bandwidth" shows what an individual node reports as its own maximum bandwidth. Think of it more as a best guess that may or may not reflect on reality. 
+ To make things worse, the effective bandwidth for a node is usually less than that because you are sharing it with many other TOR users. 
+  As an additional complication, every connection you make across TOR is a circuit. Every circuit is made of multiple nodes. So your real, effective bandwidth for a connection is usually whichever node in that circuit has the lowest bandwidth divided by the number of TOR users actively using it. This is almost unknowable without a network stress test, so we just show the lowest REPORTED node bandwidth (from all the nodes in that circuit) as "circuit max".
+  In summary, the "alleged max bandwidth" for an exit might show you its capabilities, but the bandwidth you will currently experience is expected to be somewhere below the "circuit max".
+  Take note: if you save information about your exit nodes, remove the "circuit max" information because this pertains only to the circuit and not the node.
+
+Q: New circuits seem to randomly pop up when opening a new browser window or new browser tab (instead of using one of the "available exits"). Why is this?
+
+A: When starting a new data stream, completely new circuits may seem to instantly materialize out of nothing. This is because there is much more going on in TOR than we show in this program. For instance, TOR will have many internal circuits that only communicate within TOR, but can be modified, extended, or switched into external circuits that exit onto the World Wide Web. (This program does not graphically show internal circuits.) 
+  The TOR protocol is very dynamic. If you want to improve your understanding of how it works, it is recommended that you use Anonymous Relay Monitor in conjunction with this program.
+
+Q: What kind of encryption is used for saved data?
+
+A: Currently it's salted 256-bit PBKDF hashes with variable passes ( over 10,000) fed to AES (CFB-mode) which encrypts the data. It seemed to be the best option the older Python crypto module would allow, but I'm open to ideas (and most of the process, except for appending footer data, can be potentially upgraded without breaking previous iterations).
+
+Q: Why don't you use steganography?
+
+A: There are numerous reasons that this program does not currently use steganography:
+  1)  Steganography does not allow much information to be hidden. It often allows, at most, one bit to be hidden for every thousand bits in a target file. This is simply not enough for some of the data that we plan to hide.
+  2)  Steganography is limited to a very small set of filetypes. Usually, it only works for GIF images and lossless audio/video. It is becoming rare for media to be saved in these filetypes anyways. Is the user supposed to know how to convert from JPEG to GIF or lossy to lossless? What if that fails?
+  3)  Steganography can fail anyways. There are many different implementations of steganography on many different filetypes. However, play with any implementation long enough and you will see it destroy a file. Nothing is more sad and more suspicious than a poor quality GIF image that now only has a sliver of a viewable, mangled image.
+  4)  Steganography is not a silver bullet. Depending on the implementation and technique, steganography can be very effective at hiding encrypted data and remaining undetected. However, the sad truth is that the more likely a technique is to remain undetected from steganalysis, the more likely it is to suffer from one of the other problems listed. Most steganography techniques can be detected with targeted steganalysis.
+I am not against steganography. If done correctly, it can have great application for certain things. It just does not currently fit well for this program.
+
+Q: How safe is my saved data from hackers / crackers / Anonymous / NSA / parents?
+
+A: I am not a cryptographer. Therefore, don't trust my crypto implementation to be safe against the NSA or even your mom (or other tech-savvy cyberbrained overseers)! 
+  First off, anyone with modest suspicion of a file can detect that it holds encrypted data! All the obfuscation techniques used (padding, rotating, embedding, etc) are either meant to obfuscate guessable keyspace or to remain undetected at a CURSORY GLANCE! Someone with the tools (like "grep"), the know-how and a suspicion of your file can easily detect that this file has extra data. From there, it's only a matter of time before they get into it... assuming the crypto implementation isn't self-defeating... It's not that I'm trying to scare you.... oh, no, wait, I AM trying to scare you... As with everything in life, proceed at your own risk!
+
+Q: What files can I embed saved data into?
+
+A: Most binary media files. I have successfully tried it with .pdf, .png, .jpeg, .mp4, .mp3, .ogv and a few others without affecting the output of the media. Test the file after you embed!
+
+Q: How "fast" is your crypto?
+
+A: Depends. One core of an i5 processor peaking at 75% can do one iteration of de-obfuscation and decryption in almost exactly one second. This means it's pretty darn slow. This also assumes that the obfuscation techniques hold up to scrutiny and that the cracker is working with the entire encrypted blob. (You can't know where the start of data is without the correct password.)
+
+Q: Can ATC run on other operating systems / other platforms?
+
+A: All elements of the program were selected to be flexible and cross-platform. As long as you can install PyQt4 (Python's implementation of Qt), Stem (Python's TOR API) and 0mq (or ZeroMQ, for Python), you can potentially run ATC on your operating system with minimal changes. This means ATC may (or may not) be able to run on most Linux distros, most Unix distros and even OSX. There's only one big exception: I WILL NOT try to run it on Windows and neither should you.
+
+Q: Why are you hating on Windows??
+
+A: The reason I discourage adapting ATC for Windows has nothing to do with my operating system preferences. However, Windows does use a very different random generator, it doesn't support Unix domain sockets, and, oh yeah, the creators of TOR discourage you from running their software on Windows for numerous security reasons. It should never happen. It will never happen. :-(    (sorry)
+
+Q: Is there a way to add my idea to ATC?
+
+A: Absolutely. Just tell me! Also, if you know Python, you can write your own content! 
+  ATC is designed to allow new content and even new front-ends! Extra "services" can be added as Python modules (using the skeleton provided; an understanding of the "0mq" protocol may be required) or if you want to add simpler functionality that maybe doesn't require TOR, a "utility" can be added as a Python module (also using the skeleton provided). You can even skip the client entirely and talk to ATC's agent directly! (Note: this would require more extensive knowledge of the "0mq" protocol, specific permissions, etc. You should probably contact me before attempting this.) Don't want to write the code? Just tell me about it and I'll see if I can write something up.
